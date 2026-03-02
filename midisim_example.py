@@ -46,6 +46,7 @@ input_toks_seqs = midisim.midi_to_tokens('Untitled_31_short.mid')
 
 # Compute source/query embeddings
 query_emb = midisim.get_embeddings_bf16(model, input_toks_seqs)
+#! above should be all we need to compare generated midi to the original for simularity
 
 # Calculate cosine similarity between source/query MIDI embeddings and embeddings corpus
 idxs, sims = midisim.cosine_similarity_topk(query_emb, corpus_emb)
