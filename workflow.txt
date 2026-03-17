@@ -1,0 +1,75 @@
+Finding next bar of music: classified as a GA
+
+feasible solutions: 
+infinite, as notes can be added in inf smaller and smaller intervals
+so we restrict the solution space:
+pitch: MIDI can only represent 128 notes, 0-127 (could be 1-128, worth checking)
+ - middle C (C4) is 60
+ - named notes go down to A0, which is at 20
+ - Instruments also have a note range which could further restrict the notes used
+
+Timing: MIDI restricts based on ticks blah  blah (find out more)
+
+- music wise, could restrict based on full notes to 1/64th notes or variations of
+- ie a quarter note with a dot is a quarter and an 1/8th, but it still is within the fraction
+- doing this restricts the space more
+
+
+Velocity: MIDI's way of saying how hard a note is pressed, 0-127, may just ignore
+
+ignoring velocity by setting it the same way as the midi input, we can then give a score based on the embedding  
+
+An optimisation problem instance: a pair of (F,c), where:
+F - any set (set of feasible solutions) - set of bars that exist that could follow, restricted by the rules imposed by MIDI alongside my own restrictions
+c - cost function, mapping c: F -> R(real numbers?)
+
+if c(f) <= c(y) (cost of solution f <= cost of solution y) for all y ∈ F then f is globally optimal, there may be (probs will be) local optima that the program will find
+
+A Optimisation Problem is a set I of instances of an optimasation problem
+(I think this means an instance of an OP is for a specific application, whereas an OP is a set of all of those)
+
+Genetic Algorithms:
+
+Chromosome: string of "genes" representing a solution, each gene represents the value of a parameter in the solution set
+
+What we need to do is find a way to represent notes for the GA
+
+Population: set of chromosomes (aka possible solutions)
+
+Genetic operators: Selection, Crossover and Mutation
+
+Selection: the act of selecting two "parents" for crossover. based on the fitness. The higher the fitness the more often that parent should be chosen
+
+Crossover: with two parents selected, a crossover point is chosen. two children are made via switching chromosomes after the crossover point
+
+if the crossover is randomly chosen and then can thus cut up notes, then the system will be capable of creating different note lengths from the parents (starting with a random population of quarter notes would be able to evolve into 1/8th and 1/16th ect)
+
+crossover point could also have a chance to include both notes, thus creating a chord?
+
+also using this, we won't get any notes longer than a quarter, so some way of tie-ing notes needs to be included
+
+Mutation: with a small probability, change the value of some chromosome
+
+mutation could also add another note in the place of a note to create chords
+
+a limitation is that notes wont overrun eachother, maximum duration will be up to the start of the next note
+
+could do with a sequence of notes with durations and such, crossover at a time point, weighted more for on beat. mutations would be changing something bout a note.
+
+this would work for a single track
+Gene: list of notes:
+
+Note: 
+Pitch, int from 0-127
+Beat, floating point, 
+	int value from 0 to top number on time sig (e.g in 2/4 is 2, in 12/8 is 12)
+	decimal value is the sub beat placement (if each beat is a quarter note, 1 would be placed at beat 1 (the start), 2.25 would be
+	placed at beat 2 + 1/16th note
+duration, floating point,
+	same as above
+
+
+
+
+
+
