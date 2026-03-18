@@ -21,13 +21,14 @@ def getEmbeddingFile(path):
 #MIDI data in a buffer
 def getEmbeddingBuf(buf):
     input_toks_seqs = midisim.midi_to_tokens(buf, verbose=midismVerbose)
-    return midisim.get_embeddings_bf16(model, input_toks_seqs, verbose=midismVerbose)
+    return midisim.get_embeddings_bf16(model, input_toks_seqs, verbose=midismVerbose, show_progress_bar=midismVerbose)
 
 def compareEmbeddings(emb1, emb2):
     #comparing emb2's simularity to emb1
     best_idx, best_vals = midisim.cosine_similarity_topk(emb1, emb2, verbose=midismVerbose)
     similarity_score = best_vals[0][0]  # scalar float
-    print(f"Similarity: {similarity_score:.4f}")
+    return similarity_score
+    #print(f"Similarity: {similarity_score:.4f}")
 
 """
 score = 1: exact match

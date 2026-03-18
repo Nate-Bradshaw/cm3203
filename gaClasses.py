@@ -9,7 +9,8 @@ class note:
 
 class bar: #single track bar
     notes = [] #! notes need to be kept in time order
-    similarityScore = 0 #0 is no relation, 1 is identical, looking for a 0.9ish?
+    fitness = 0 #simularity score, 0 is no relation, 1 is identical, looking for a 0.9ish?
+    srs = -1
     def __init__(self):
         self.notes = []
 
@@ -36,9 +37,7 @@ def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = 
     #ppq = pulses per quater or ticks per beat, default is 480
     # therefore 480 ticks is a quater note, 480/2 is 1/8th note ect
     #just rendering as piano for now
-    print(tsD)
-    print(tsN)
-    print(bpm)
+
     mid = MidiFile(ticks_per_beat=480)
     pianoTrack = MidiTrack()
     mid.tracks.append(pianoTrack)

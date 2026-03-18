@@ -23,9 +23,13 @@ bpm = md[2]
 
 bars = []
 
-#create a bunch of random bars, 4 quarter notes each with rests
+sumFitness = 0
+
+#create a bunch of random bars, 4 quarter notes each with rests and then giving them a simularity score
 for i in range(popSize):
     newBar = gac.bar()
+    #TODO: with some randomness allow the starting pop have full notes. Start with a full note, with a chance to be subdivided. repeat for all
+    #TODO: until all notes have been passed and not subdivided
     for j in range(tsNumerator):
         #21 to 108 is all the notes on a piano named 1 to 88, aka A0 to C8
         #j used, first note is at beat 1 for the bar up to tsUpper
@@ -35,7 +39,23 @@ for i in range(popSize):
         #print(newNote.pitch)
         newBar.addNote(newNote)
     bars.append(newBar)
-    f.compareEmbeddings(inputEmb, f.getEmbeddingBuf(gac.renderMidi(bars[i], tsNumerator, tsDenominator, bpm, createFile=False)))
+    similarityScore = f.compareEmbeddings(inputEmb, f.getEmbeddingBuf(gac.renderMidi(bars[i], tsNumerator, tsDenominator, bpm, createFile=False)))
+    bars[i].fitness = similarityScore
+    sumFitness += similarityScore
+# Stochastic remainder selection
+
+print(f"sum fitness: {sumFitness}")
+print(f"avr fitness: {sumFitness/popSize}")
+
+
+expInd = (bars[0].fitness / sumFitness) * popSize
+
+print(f"bar 0 with {bars[0].fitness} has ei of {expInd}")
+
+# for each whole int in expInd, that bar gets a slot. e.g. 2.5 would be 2 slots with a 0.5 chance of a 3rd
+# any with 0 slots are eliminated, any with 1 stay and any with more get multiple slots
+
+
 
 
 
