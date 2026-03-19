@@ -54,24 +54,42 @@ print(f"avr fitness: {sumFitness/popSize}")
 # any with 0 slots are eliminated, any with 1 stay and any with more get multiple slots
 
 nextBars = []
+eiFractionSum = 0
 for i in range(popSize):
     #amount to be included guarenteed in next generation
     #https://datajobstest.com/data-science-repo/Genetic-Algorithm-Guide-[Tom-Mathew].pdf 2.7
     #expected individuals
-    ei = (bars[i].fitness / sumFitness) * popSize
-    n = floor(ei)
-    print(f"bar {i} with ei {ei} evaluated")
+    bars[i].ei = (bars[i].fitness / sumFitness) * popSize
+    n = floor(bars[i].ei)
+    eiFractionSum += bars[i].ei-n
+    print(f"bar {i} with ei {bars[i].ei} evaluated")
     for j in range(n):
-        print(f"bar {i} with ei {ei} added to next gen")
+        print(f"bar {i} with ei {bars[i].ei} added to next gen")
         nextBars.append(bars[i])
-    #Bernoulli trials(?) the odds are weighted with the fractional ei from 0-1
-    #! replace with Stochastic trials to guarentee a pop size, see miro board
-    r = rand.random()
-    if(r < (ei-n)):
-        print(f"bar {i} with fractional ei {(ei-n)} added to next gen, r = {r}")
-        nextBars.append(bars[i])
-    else:
-        print(f"bar {i} with fractional ei {(ei-n)} not added to next gen, r = {r}")
+
+# ei fractional / sum of fractional = normalised prob between 0-1
+# then find how many slots are left, sl
+# get a random number between 0-1, get values ei(n) < r <= ei(n+1), same for r + 1/sl % 1
+
+
+slotsLeft = popSize - len(nextBars)
+print(f"slots left = {slotsLeft} from {popSize} - {len(nextBars)}")
+r = rand.random()
+eiNormSum = 0
+for i in range(slotsLeft):
+    pointer = (r + (1/slotsLeft)*i) % 1
+    print(f"pointer: {pointer}")
+    eiNormSum = 0
+    for j in range(popSize):
+        print(f"norm sum: {eiNormSum}")
+        if(eiNormSum < pointer):
+            eiNormSum += (bars[j].ei - floor(bars[j].ei)) / eiFractionSum
+        else:
+            nextBars.append(bars[j-1])
+            print(f"bar {j} with ei {bars[j].ei} added to next gen in SUS")
+            break
+
+
 
 print(f"new gen size: {len(nextBars)}")
 
