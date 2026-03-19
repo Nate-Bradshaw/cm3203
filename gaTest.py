@@ -1,4 +1,5 @@
 import random as rand
+from math import floor
 
 import gaClasses as gac
 import fitnessFunction as f
@@ -48,14 +49,31 @@ print(f"sum fitness: {sumFitness}")
 print(f"avr fitness: {sumFitness/popSize}")
 
 
-expInd = (bars[0].fitness / sumFitness) * popSize
-
-print(f"bar 0 with {bars[0].fitness} has ei of {expInd}")
 
 # for each whole int in expInd, that bar gets a slot. e.g. 2.5 would be 2 slots with a 0.5 chance of a 3rd
 # any with 0 slots are eliminated, any with 1 stay and any with more get multiple slots
 
+nextBars = []
+for i in range(popSize):
+    #amount to be included guarenteed in next generation
+    #https://datajobstest.com/data-science-repo/Genetic-Algorithm-Guide-[Tom-Mathew].pdf 2.7
+    #expected individuals
+    ei = (bars[i].fitness / sumFitness) * popSize
+    n = floor(ei)
+    print(f"bar {i} with ei {ei} evaluated")
+    for j in range(n):
+        print(f"bar {i} with ei {ei} added to next gen")
+        nextBars.append(bars[i])
+    #Bernoulli trials(?) the odds are weighted with the fractional ei from 0-1
+    #! replace with Stochastic trials to guarentee a pop size, see miro board
+    r = rand.random()
+    if(r < (ei-n)):
+        print(f"bar {i} with fractional ei {(ei-n)} added to next gen, r = {r}")
+        nextBars.append(bars[i])
+    else:
+        print(f"bar {i} with fractional ei {(ei-n)} not added to next gen, r = {r}")
 
+print(f"new gen size: {len(nextBars)}")
 
 
 
