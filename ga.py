@@ -36,7 +36,7 @@ for i in range(popSize):
         #j used, first note is at beat 1 for the bar up to tsUpper
         #! indexing beats from 1 in notes, keep this in mind
         #durration of 1 beat, which would be a quater note with tsLower of 4 (E.g in 4/4 time sig)
-        newNote = gac.note(rand.randint(21, 108), j+1, 1)
+        newNote = gac.note(rand.randint(21, 108), 1)
         #print(newNote.pitch)
         newBar.addNote(newNote)
     bars.append(newBar)
@@ -92,6 +92,9 @@ for i in range(slotsLeft):
 
 
 print(f"new gen size: {len(nextBars)}")
+
+#fittest chromosomes will stay at the start of the new list, as they had a ei of 1 or higher
+#! although if ei is 2 or higher, there will duplicate genes, cossover of these genes would do nothing so there should be some randomness
 
 
 
