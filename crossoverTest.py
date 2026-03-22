@@ -25,7 +25,7 @@ for i in range(popSize):
     #TODO: with some randomness allow the starting pop have full notes. Start with a full note, with a chance to be subdivided. repeat for all
     #TODO: until all notes have been passed and not subdivided
     for j in range(tsNumerator):
-        newNote = gac.note(rand.randint(21, 108), 1)
+        newNote = gac.note(rand.randint(60, 108), 1)
         newBar.addNote(newNote)
     bars.append(newBar)
     gac.renderMidi(bars[i], tsNumerator, tsDenominator, name=f"coTest{i}")

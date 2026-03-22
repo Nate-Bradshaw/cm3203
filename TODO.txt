@@ -1,0 +1,41 @@
+Questions to ask:
+
+Survey
+- is it reasonable to send it out at the end of easter
+- thinking of giving some examples of generated midi and guaging responses
+	- should be a better evaluation than saying weather i like the outputs or not
+
+Writeup
+- i'll read the damn PATs wiki
+
+
+GA
+- working fitness function based fully on the embedding right now (also just embeds the bar, further testing for emeding the bar with the input midi maybe)
+	- also want to include how "consonant" the bar is in the fitness function, will see if needed if the results of the working ga arnt that good
+
+- working Stochastic remainder selection (each chromosome (bar) gets an expected amount of individuals in next gen, for each whole number they get a guarenteed slot and then Stochastic Universal Sampling to chose the rest
+
+- working crossover, choses a random point up to 1/64th note. this allows different note lengths to appear from starting with only quarter notes
+
+- need to do mutation, may use that to legnthen notes, create chords or rests
+
+- this is single track rn, to make multiple track the chromosomes will be stacked downwards
+
+- note on restricting notes to their instruments range
+
+notes:
+27th meeting online at 2pm "project check-in"
+
+offspring should be the same 
+
+artistic choices arnt marked
+artistic choices should be backed tech
+ethics asap 4 docs, read and fill out and send to crispin
+probs have people in person
+if using google, "google llc is an info processor"
+comparison of responses
+its a usability test, not allowed to do an experiment on human perception
+
+elicit.com ai powered literetaure search that uni pays for
+
+reflection is better if project 
