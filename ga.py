@@ -7,7 +7,7 @@ import gaFunctions as gaf
 
 inputMidiPath = "midi/Untitled_15.mid"
 
-md = gac.getMetadata(inputMidiPath)
+md = gaf.getMetadata(inputMidiPath)
 
 inputEmb = gaf.getEmbeddingFile(inputMidiPath)
 
@@ -29,7 +29,7 @@ bars = []
 for i in range(popSize):
     newBar = gac.bar()
     #starting with a full note
-    newBar.addNote(gac.note(rand.randint(21, 108), tsNumerator))
+    newBar.addNote(gac.note(rand.randint(20, 108), tsNumerator))
     bars.append(newBar)
 
 # for each whole int in expInd, that bar gets a slot. e.g. 2.5 would be 2 slots with a 0.5 chance of a 3rd

@@ -1,9 +1,9 @@
-from mido import MidiFile
-
 class note:
     def __init__(self, pitchIn, durationIn):
         #on pitch, may impliment rests as a value such as -1 or smthn
-        self.pitch = pitchIn #TODO: restrict between 21 to 108 (piano) or to 127 (named notes)
+        self.pitch = pitchIn #* a pitch of 20 or lower is converted into a rest (-1), means the odd of a rest can be increased
+        if self.pitch <= 20:
+            self.pitch = -1
         #duration in (usually, some time sigs it may be an 1/8th or 1/2th) quarter notes
         self.duration = durationIn
 
@@ -27,19 +27,3 @@ class bar: #single track bar
         else:
             print(f"getNoteBeat {noteIndex} is out of range for length {len(self.notes)}")
             return -1
-
-def getMetadata(midiPath):
-    mid = MidiFile(midiPath)
-    tsN = -1
-    tsD = -1
-    bpm = -1
-    for msg in mid:
-        if msg.is_meta:
-            if msg.type == 'time_signature':
-                tsN = msg.numerator
-                tsD = msg.denominator
-            elif msg.type == 'set_tempo':
-                bpm = 60_000_000 // msg.tempo
-    #TODO: some sort of check so we dont have -1 on any output
-    #! also songs that change tempo or time sig?
-    return [tsN, tsD, bpm]

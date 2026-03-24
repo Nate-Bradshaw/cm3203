@@ -6,7 +6,7 @@ import gaFunctions as gaf
 
 inputMidiPath = "midi/Untitled_15.mid"
 
-md = gac.getMetadata(inputMidiPath)
+md = gaf.getMetadata(inputMidiPath)
 
 inputEmb = gaf.getEmbeddingFile(inputMidiPath)
 
@@ -23,7 +23,7 @@ sumFitness = 0
 for i in range(popSize):
     newBar = gac.bar()
     #starting with a full note
-    newBar.addNote(gac.note(rand.randint(40, 70), tsNumerator))
+    newBar.addNote(gac.note(rand.randint(20, 21), tsNumerator))
     bars.append(newBar)
 
 gaf.renderMidi(bars[0], tsNumerator, tsDenominator, name=f"coTestInput0")
@@ -32,7 +32,7 @@ gaf.renderMidi(bars[1], tsNumerator, tsDenominator, name=f"coTestInput1")
 print(f"sum fitness: {sumFitness}")
 print(f"avr fitness: {sumFitness/popSize}")
 
-crBars = gaf.crossover(bars, tsNumerator, 1)
+crBars = gaf.crossover(bars, tsNumerator, 0)
 
 gaf.renderMidi(crBars[0], tsNumerator, tsDenominator, name=f"coTestOutput0")
 gaf.renderMidi(crBars[1], tsNumerator, tsDenominator, name=f"coTestOutput1")

@@ -167,7 +167,7 @@ def mutate(barIn):
     #pick note, take note after it, merge into first note
     if(len(barIn.notes) > 1):
         i = rand.randint(0, len(barIn.notes)-2)
-        pitch = rand.randint(21, 108)
+        pitch = rand.randint(20, 108)
         barIn.notes[i].duration += barIn.notes.pop(i+1).duration
         barIn.notes[i].pitch = pitch
 
@@ -184,9 +184,15 @@ def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = 
     pianoTrack.append(MetaMessage('set_tempo', tempo=60000000//bpm, time=0)) #60,000,000 microseconds in a min, div by bpm to get ticks(?) for MIDI
     pianoTrack.append(Message('program_change', program=0, time=0))
 
+    t = 0
+    #TODO: a rest at the end of a bar isnt rendered
     for note in barIn.notes:
-        pianoTrack.append(Message('note_on',  note=note.pitch, velocity=64, time=0))
-        pianoTrack.append(Message('note_off', note=note.pitch, velocity=64, time=int(ppq*note.duration)))
+        if note.pitch == -1:
+            t += int(ppq*note.duration)
+        else:
+            pianoTrack.append(Message('note_on',  note=note.pitch, velocity=64, time=t))
+            pianoTrack.append(Message('note_off', note=note.pitch, velocity=64, time=int(ppq*note.duration)))
+            t = 0
     
     if(createFile):
         mid.save(f'midi/{name}.mid')
@@ -195,3 +201,19 @@ def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = 
         buf = BytesIO()
         mid.save(file=buf)
         return buf.getvalue()
+    
+def getMetadata(midiPath):
+    mid = MidiFile(midiPath)
+    tsN = -1
+    tsD = -1
+    bpm = -1
+    for msg in mid:
+        if msg.is_meta:
+            if msg.type == 'time_signature':
+                tsN = msg.numerator
+                tsD = msg.denominator
+            elif msg.type == 'set_tempo':
+                bpm = 60_000_000 // msg.tempo
+    #TODO: some sort of check so we dont have -1 on any output
+    #! also songs that change tempo or time sig?
+    return [tsN, tsD, bpm]
