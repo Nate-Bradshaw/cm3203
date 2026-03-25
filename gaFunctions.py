@@ -102,18 +102,21 @@ def crossover(barsIn, tsN, mutationProb):
         bar1 = barsIn.pop(rand.randint(0, len(barsIn)-1))
         bar2 = barsIn.pop(rand.randint(0, len(barsIn)-1))
 
-        subdiv = 0.5
-        #* limiting to 1/64th notes
-        for j in range(4):
-            r = rand.random()
-            #2/4 chance of terminating and keeping the current split position
-            if(r < 0.5):
-                break
-            #1/4 of going down a level at the increment forward
-            elif(r < 0.75):
-                coBeat += subdiv
-            #1/4 of going down a level at an current position
-            subdiv /= 2
+        while(coBeat == 1):
+            subdiv = 0.5
+            #* limiting to 1/64th notes
+            for j in range(4):
+                r = rand.random()
+                #2/4 chance of terminating and keeping the current split position
+                if(r < 0.5):
+                    break
+                #1/4 of going down a level at the increment forward
+                elif(r < 0.75):
+                    coBeat += subdiv
+                #1/4 of going down a level at an current position
+                subdiv /= 2
+
+        print(f"crossover at {coBeat}")
 
         crBar = cr(bar1, bar2, coBeat)        
         if rand.random() <= mutationProb:
@@ -137,11 +140,13 @@ def cr(bar1, bar2, coBeat):
         if(cumBeats > coBeat):
             #go back and clip the end of last note
             cBar.notes[len(cBar.notes)-1].duration = coBeat - cBar.getNoteBeat(i-1)
+            print(f"0 - {coBeat - cBar.getNoteBeat(i-1)}")
             break
         else:
             #go to beat at end of next note
             cumBeats += bar1.notes[i].duration
             cBar.addNote(gac.note(bar1.notes[i].pitch, bar1.notes[i].duration))
+            print(f"1 - {bar1.notes[i].duration}")
 
     cumBeats = 1
     for i in range(len(bar2.notes)):
@@ -149,9 +154,15 @@ def cr(bar1, bar2, coBeat):
             cumBeats += bar2.notes[i].duration
             if(cumBeats > coBeat):
                 #clipping the note
-                cBar.addNote(gac.note(bar2.notes[i].pitch, (bar2.getNoteBeat(i) + bar2.notes[i].duration) - (cBar.getNoteBeat(len(cBar.notes)-1) + cBar.notes[len(cBar.notes)-1].duration)))
+                noteDur = (bar2.getNoteBeat(i) + bar2.notes[i].duration) - (cBar.getNoteBeat(len(cBar.notes)-1) + cBar.notes[len(cBar.notes)-1].duration)
+                #if(noteDur > 0):
+                cBar.addNote(gac.note(bar2.notes[i].pitch, noteDur))
+                print(f"2 - {noteDur}")
+
         else:
             cBar.addNote(gac.note(bar2.notes[i].pitch, bar2.notes[i].duration))
+            print(f"3 - {bar2.notes[i].duration}")
+
     
     return cBar
 

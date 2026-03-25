@@ -11,7 +11,7 @@ md = gaf.getMetadata(inputMidiPath)
 
 inputEmb = gaf.getEmbeddingFile(inputMidiPath)
 
-popSize = 32
+popSize = 2
 
 tsNumerator = md[0]
 tsDenominator = md[1]
@@ -38,6 +38,11 @@ for i in range(popSize):
 # any with 0 slots are eliminated, any with 1 stay and any with more get multiple slots
 
 for i in range(10):
+    print(f"gen {i}")
     parentBars = gaf.getParents(bars, popSize, inputEmb, tsNumerator, tsDenominator, bpm)
     bars = gaf.crossover(parentBars, tsNumerator, 0)
-    #gaf.renderMidi(bars[0], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}")
+    gaf.renderMidi(bars[0], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}_{0}")
+    bars[0].printNotes()
+    gaf.renderMidi(bars[1], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}_{1}")
+    bars[1].printNotes()
+
