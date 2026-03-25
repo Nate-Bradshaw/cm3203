@@ -29,7 +29,9 @@ bars = []
 for i in range(popSize):
     newBar = gac.bar()
     #starting with a full note
-    newBar.addNote(gac.note(rand.randint(20, 108), tsNumerator))
+    #! BIG BUG: if randint hits 20 or lower, the bar will be just a rest, thus breaking the embedding 
+    #! and causing a crash: improve midi renderer to properly render rests to re-impliment
+    newBar.addNote(gac.note(rand.randint(21, 108), tsNumerator))
     bars.append(newBar)
 
 # for each whole int in expInd, that bar gets a slot. e.g. 2.5 would be 2 slots with a 0.5 chance of a 3rd
@@ -38,4 +40,4 @@ for i in range(popSize):
 for i in range(10):
     parentBars = gaf.getParents(bars, popSize, inputEmb, tsNumerator, tsDenominator, bpm)
     bars = gaf.crossover(parentBars, tsNumerator, 0)
-    gac.renderMidi(bars[0], tsNumerator, tsDenominator, name=f"Gen{i+1}")
+    #gaf.renderMidi(bars[0], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}")

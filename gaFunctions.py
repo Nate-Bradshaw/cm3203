@@ -11,8 +11,6 @@ midismVerbose = False
 #pre downloaded embedding and model
 emb_path = './midisim-embeddings\discover_midi_dataset_37292_genres_midis_embeddings_cc_by_nc_sa.npy'
 model_path = './midisim-models/midisim_small_pre_trained_model_2_epochs_43117_steps_0.3148_loss_0.9229_acc.pth'
-midi_path_rel0 = 'Untitled_31_short.mid'
-midi_path_rel1 = 'Untitled_15.mid'
 
 #embedings
 corpus_midi_names, corpus_emb = midisim.load_embeddings(emb_path, verbose=midismVerbose)
@@ -117,9 +115,6 @@ def crossover(barsIn, tsN, mutationProb):
             #1/4 of going down a level at an current position
             subdiv /= 2
 
-        coBeat = 3.5
-        print(f"crossover beat = {coBeat}")
-
         crBar = cr(bar1, bar2, coBeat)        
         if rand.random() <= mutationProb:
             mutate(crBar)       
@@ -139,7 +134,7 @@ def cr(bar1, bar2, coBeat):
     #second bar in a crossover overides the first one
     cumBeats = 1
     for i in range(len(bar1.notes)+1):
-        if(cumBeats >= coBeat):
+        if(cumBeats > coBeat):
             #go back and clip the end of last note
             cBar.notes[len(cBar.notes)-1].duration = coBeat - cBar.getNoteBeat(i-1)
             break
@@ -192,6 +187,8 @@ def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = 
         else:
             pianoTrack.append(Message('note_on',  note=note.pitch, velocity=64, time=t))
             pianoTrack.append(Message('note_off', note=note.pitch, velocity=64, time=int(ppq*note.duration)))
+            if(int(ppq*note.duration) == 0):
+                print("note dur of 0")
             t = 0
     
     if(createFile):

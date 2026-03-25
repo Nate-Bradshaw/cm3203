@@ -23,7 +23,8 @@ sumFitness = 0
 for i in range(popSize):
     newBar = gac.bar()
     #starting with a full note
-    newBar.addNote(gac.note(rand.randint(20, 21), tsNumerator))
+    newBar.addNote(gac.note(rand.randint(20, 21), 1))
+    newBar.addNote(gac.note(rand.randint(20, 21), 2))
     bars.append(newBar)
 
 gaf.renderMidi(bars[0], tsNumerator, tsDenominator, name=f"coTestInput0")
