@@ -1,7 +1,8 @@
 class note:
-    def __init__(self, pitchIn, startIn):
+    def __init__(self, pitchesIn, startIn):
         #on pitch, may impliment rests as a value such as -1 or smthn
-        self.pitch = pitchIn #* a pitch of 20 or lower is converted into a rest (-1), means the odd of a rest can be increased
+        # PITCHES IS A LIST OF NOTES TO ALLOW CHORDS
+        self.pitches = pitchesIn #* a pitch of 20 or lower is converted into a rest (-1), means the odd of a rest can be increased
         if self.pitch <= 20:
             self.pitch = -1
         #duration in (usually, some time sigs it may be an 1/8th or 1/2th) quarter notes
