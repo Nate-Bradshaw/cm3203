@@ -1,10 +1,16 @@
 class note:
-    def __init__(self, pitchesIn, startIn):
+    def __init__(self, pitchIn, startIn):
         #on pitch, may impliment rests as a value such as -1 or smthn
         # PITCHES IS A LIST OF NOTES TO ALLOW CHORDS
-        self.pitches = pitchesIn #* a pitch of 20 or lower is converted into a rest (-1), means the odd of a rest can be increased
-        if self.pitch <= 20:
-            self.pitch = -1
+        self.pitches = []
+        if(type(pitchIn) == list):
+            #* assuming that pitches under 20 are already -1
+            #TODO: move this logic over to the renderer
+            self.pitches = pitchIn
+        else:
+            if pitchIn <= 20:
+                pitchIn = -1
+            self.pitches.append(pitchIn) #* a pitch of 20 or lower is converted into a rest (-1), means the odd of a rest can be increased
         #duration in (usually, some time sigs it may be an 1/8th or 1/2th) quarter notes
         self.start = startIn
 
@@ -35,3 +41,12 @@ class bar: #single track bar
             outstr += f"[note: {i}, pitch: {self.notes[i].pitch}, duration: {self.notes[i].duration}], "
         print(outstr)
         return outstr
+    
+    def copyBarNotes(self, barIn):
+        #this doesnt include ei or fitness
+        notesIn = barIn.notes
+
+        self.notes = []
+
+        for n in notesIn:
+            self.notes.append(note(n.pitches, n.start))

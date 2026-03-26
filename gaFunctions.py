@@ -116,12 +116,15 @@ def crossover(barsIn, tsN, mutationProb):
                 #1/4 of going down a level at an current position
                 subdiv /= 2
 
+        coBeat = 3
         print(f"crossover at {coBeat}")
 
         crBar = cr(bar1, bar2, coBeat)        
         if rand.random() <= mutationProb:
             mutate(crBar)       
         barsOut.append(crBar)
+
+        print("...")
 
         crBar = cr(bar2, bar1, coBeat)     
         if rand.random() <= mutationProb:
@@ -133,12 +136,16 @@ def crossover(barsIn, tsN, mutationProb):
 def cr(bar1, bar2, coBeat):
     #* beats are indexing from 1 where 1 is the starting beat in the bar
     outBar = gac.bar()
+    bar1.copyBarNotes(bar1)
+    bar2.copyBarNotes(bar2)
 
     for i in range(len(bar1.notes)):
         #if a note is before crossover, keep it, otherwise break
         if(bar1.notes[i].start < coBeat):
-            outBar.addNote(bar1.notes[i])
+            outBar.addNote(gac.note(bar1.notes[i].pitches, bar1.notes[i].start))
+            print(f"pre 0, bar1.notes[i].start {bar1.notes[i].start} < coBeat {coBeat}")
         else:
+            print(f"pre 1, pass as note start {bar1.notes[i].start} > coBeat {coBeat}")
             break
     
     for i in range(len(bar2.notes)):
@@ -146,18 +153,22 @@ def cr(bar1, bar2, coBeat):
         #if note comes on or after crossover, add it
         #however, if there is no note at the crossover:
         #   go back to the previous note in the list and move its start to the crossover
-        if(bar2.notes[i].start < coBeat and i < len(bar2.notes)):
+        if(bar2.notes[i].start < coBeat and i+1 < len(bar2.notes)):
             pass
+            print(f"0, pass as bar2 note start {bar2.notes[i].start} < coBeat {coBeat} and i+1 {i+1} < len(bar2.notes) {len(bar2.notes)}")
         elif(i == len(bar2.notes)):
             #catching the case where all notes in bar 2 are behind the crossover
-            outBar.addNote(bar2.notes[i-1])
-            outBar.notes[len(outBar.notes)].start = coBeat
+            outBar.addNote(gac.note(bar2.notes[i-1].pitches, bar2.notes[i-1].start))
+            outBar.notes[len(outBar.notes)-1].start = coBeat
+            print(f"1, i {i} == len(bar2.notes) {len(bar2.notes)}, add note {i-1}, change start to coBeat {coBeat} ")
         else:
-            if(bar2.notes[i] >= coBeat):
-                outBar.addNote(bar2.notes[i])
+            if(bar2.notes[i].start >= coBeat):
+                outBar.addNote(gac.note(bar2.notes[i].pitches, bar2.notes[i].start))
+                print(f"2, else, if bar2.notes[i].start {bar2.notes[i].start} >= coBeat {coBeat}, add bar2.notes[i] with start {bar2.notes[i].start}")
             else:
-                outBar.addNote(bar2.notes[i-1])
-                outBar.notes[len(outBar.notes)].start = coBeat
+                outBar.addNote(gac.note(bar2.notes[i].pitches, bar2.notes[i].start))
+                outBar.notes[len(outBar.notes)-1].start = coBeat
+                print(f"3, else, else, add bar2.notes[i] set start = coBeat {coBeat}")
 
     return outBar
 
@@ -190,13 +201,17 @@ def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = 
     for i in range(len(barIn.notes)-1):
         #? may need altering for chords if the note_ons need to be together?
         for pitch in barIn.notes[i].pitches:
+            print(f"note at {barIn.notes[i].start} with len: {barIn.notes[i+1].start - barIn.notes[i].start}")
             pianoTrack.append(Message('note_on',  note=pitch, velocity=64, time=0))
             pianoTrack.append(Message('note_off', note=pitch, velocity=64, time=int(ppq*(barIn.notes[i+1].start - barIn.notes[i].start))))
 
     #special case for last note
-    for pitch in barIn.notes[len(barIn.notes)].pitches:
+    for pitch in barIn.notes[len(barIn.notes)-1].pitches:
+        print(f"note at {barIn.notes[len(barIn.notes)-1].start} with len: {(tsN+1) - barIn.notes[len(barIn.notes)-1].start}")
         pianoTrack.append(Message('note_on',  note=pitch, velocity=64, time=0))
-        pianoTrack.append(Message('note_off', note=pitch, velocity=64, time=int(ppq*(tsN - barIn.notes[len(barIn.notes)].start))))
+        pianoTrack.append(Message('note_off', note=pitch, velocity=64, time=int(ppq*((tsN+1) - barIn.notes[len(barIn.notes)-1].start))))
+        
+
     
     if(createFile):
         mid.save(f'midi/{name}.mid')
