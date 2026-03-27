@@ -11,7 +11,7 @@ md = gaf.getMetadata(inputMidiPath)
 
 inputEmb = gaf.getEmbeddingFile(inputMidiPath)
 
-popSize = 2
+popSize = 16
 
 tsNumerator = md[0]
 tsDenominator = md[1]
@@ -31,18 +31,38 @@ for i in range(popSize):
     #starting with a full note
     #! BIG BUG: if randint hits 20 or lower, the bar will be just a rest, thus breaking the embedding 
     #! and causing a crash: improve midi renderer to properly render rests to re-impliment
-    newBar.addNote(gac.note(rand.randint(21, 108), tsNumerator))
+    newBar.addNote(gac.note(rand.randint(21, 108), 1))
     bars.append(newBar)
 
 # for each whole int in expInd, that bar gets a slot. e.g. 2.5 would be 2 slots with a 0.5 chance of a 3rd
 # any with 0 slots are eliminated, any with 1 stay and any with more get multiple slots
+i = 0
 
-for i in range(10):
+
+
+for i in range(100):
     print(f"gen {i}")
     parentBars = gaf.getParents(bars, popSize, inputEmb, tsNumerator, tsDenominator, bpm)
-    bars = gaf.crossover(parentBars, tsNumerator, 0)
-    gaf.renderMidi(bars[0], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}_{0}")
-    bars[0].printNotes()
-    gaf.renderMidi(bars[1], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}_{1}")
-    bars[1].printNotes()
+    f = gaf.getFittest(parentBars)
+    if(f.fitness >= 0.8):
+        gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/0.8")
+        break
+
+    bars = gaf.crossover(parentBars, tsNumerator, 0.5)
+
+    maxBarLen = 0
+    maxBarj = 0
+    for j in range(len(bars)):
+        if (maxBarLen < len(bars[j].notes)):
+            maxBarLen = len(bars[j].notes)
+            maxBarj = j
+
+    print(f"max bar len of this gen = {maxBarLen}")
+
+    bars[maxBarj].printNotes()
+    #bars[1].printNotes()
+
+
+    #gaf.renderMidi(bars[maxBarj], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}_{maxBarj}")
+    #gaf.renderMidi(bars[1], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}_{1}")
 

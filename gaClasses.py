@@ -38,7 +38,7 @@ class bar: #single track bar
     def printNotes(self):
         outstr = ""
         for i  in range(len(self.notes)):
-            outstr += f"[note: {i}, pitch: {self.notes[i].pitch}, duration: {self.notes[i].duration}], "
+            outstr += f"[note: {i}, pitch: {self.notes[i].pitches[0]}, start: {self.notes[i].start}], "
         print(outstr)
         return outstr
     

@@ -93,6 +93,14 @@ def getParents(barsIn, popSizeIn, inputEmb, tsN, tsD, bpm):
 
     return nextBars
 
+def getFittest(barsIn):
+    #assumes the bars have already been compared to embedings
+    fi = 0
+    for i in range(len(barsIn)):
+        if(barsIn[i].fitness > barsIn[fi].fitness):
+            fi = i
+    return barsIn[fi]
+
 def crossover(barsIn, tsN, mutationProb):
     barsOut = []
 
@@ -116,15 +124,12 @@ def crossover(barsIn, tsN, mutationProb):
                 #1/4 of going down a level at an current position
                 subdiv /= 2
 
-        coBeat = 3
         print(f"crossover at {coBeat}")
 
         crBar = cr(bar1, bar2, coBeat)        
         if rand.random() <= mutationProb:
             mutate(crBar)       
         barsOut.append(crBar)
-
-        print("...")
 
         crBar = cr(bar2, bar1, coBeat)     
         if rand.random() <= mutationProb:
@@ -143,35 +148,56 @@ def cr(bar1, bar2, coBeat):
         #if a note is before crossover, keep it, otherwise break
         if(bar1.notes[i].start < coBeat):
             outBar.addNote(gac.note(bar1.notes[i].pitches, bar1.notes[i].start))
-            print(f"pre 0, bar1.notes[i].start {bar1.notes[i].start} < coBeat {coBeat}")
+            #print(f"pre 0, bar1.notes[i].start {bar1.notes[i].start} < coBeat {coBeat}")
         else:
-            print(f"pre 1, pass as note start {bar1.notes[i].start} > coBeat {coBeat}")
+            #print(f"pre 1, pass as note start {bar1.notes[i].start} > coBeat {coBeat}")
             break
     
+    passedCo = False
     for i in range(len(bar2.notes)):
         #if a note is before crossover, skip
         #if note comes on or after crossover, add it
         #however, if there is no note at the crossover:
         #   go back to the previous note in the list and move its start to the crossover
-        if(bar2.notes[i].start < coBeat and i+1 < len(bar2.notes)):
-            pass
-            print(f"0, pass as bar2 note start {bar2.notes[i].start} < coBeat {coBeat} and i+1 {i+1} < len(bar2.notes) {len(bar2.notes)}")
-        elif(i == len(bar2.notes)):
-            #catching the case where all notes in bar 2 are behind the crossover
-            outBar.addNote(gac.note(bar2.notes[i-1].pitches, bar2.notes[i-1].start))
-            outBar.notes[len(outBar.notes)-1].start = coBeat
-            print(f"1, i {i} == len(bar2.notes) {len(bar2.notes)}, add note {i-1}, change start to coBeat {coBeat} ")
+
+        #if a note is before crossover, skip, icl extra check if this is last note in bar
+        if(bar2.notes[i].start < coBeat):
+            #print(f"0, pass as bar2 note start {bar2.notes[i].start} < coBeat")
+            if(i+1 == len(bar2.notes)):
+                #if this is the last note in the bar and its less than the co, then set it to the crossover point
+                outBar.addNote(gac.note(bar2.notes[i].pitches, coBeat))
+                #print(f"0.1, i+1 {i+1} == len(bar2.notes) {len(bar2.notes)}, thus this is only note in bar and must be placed at coBeat")
+            #else, there is a note past it, eliminating the possibility that this note could be clipped by the coBeat
+        elif(bar2.notes[i].start == coBeat):
+            #if the notes start is on the crossover, add it to list with no changes and ingore previous note
+            outBar.addNote(gac.note(bar2.notes[i].pitches, bar2.notes[i].start))
+            passedCo = True
+            #print(f"1, bar2.notes[i].start {bar2.notes[i].start} = coBeat {coBeat} and added as such")
         else:
-            if(bar2.notes[i].start >= coBeat):
-                outBar.addNote(gac.note(bar2.notes[i].pitches, bar2.notes[i].start))
-                print(f"2, else, if bar2.notes[i].start {bar2.notes[i].start} >= coBeat {coBeat}, add bar2.notes[i] with start {bar2.notes[i].start}")
-            else:
-                outBar.addNote(gac.note(bar2.notes[i].pitches, bar2.notes[i].start))
-                outBar.notes[len(outBar.notes)-1].start = coBeat
-                print(f"3, else, else, add bar2.notes[i] set start = coBeat {coBeat}")
+            #else: note is > coBeat
+            #if this is the first note to pass the crossover beat and there is a note behind,
+            #move that previous note forward to the crossover point
+            #print(f"2, note is > coBeat")
+
+            if(passedCo == False and i != 0):
+                passedCo = True
+                outBar.addNote(gac.note(bar2.notes[i-1].pitches, coBeat))
+                #print(f"2.1, first note to pass cobeat WITH prev note, adding previous note at coBeat")
+            elif(not passedCo and i == 0):
+                #this case shouldnt happen, as coBeat cannot be 1 and the first note will always be on 1, as rests are coded as "notes"
+                #print(f"this case should not be happening")
+                passedCo = True
+                outBar.addNote(gac.note(bar2.notes[i].pitches, coBeat))
+            
+
+            #then add the note that is pass the crossover point
+            outBar.addNote(gac.note(bar2.notes[i].pitches, bar2.notes[i].start))
+            
+
 
     return outBar
 
+#alter bars and notes in place
 def mutate(barIn):
     #alters a bar object in place
     #so what does mutate do?
@@ -181,7 +207,7 @@ def mutate(barIn):
         i = rand.randint(0, len(barIn.notes)-2)
         pitch = rand.randint(21, 108)
         barIn.notes.pop(i+1)
-        barIn.notes[i].pitch = pitch
+        barIn.notes[i] = gac.note(pitch, barIn.notes[i].start)
 
 def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = "outputFOO"):
     #ppq = pulses per quater or ticks per beat, default is 480
@@ -201,13 +227,13 @@ def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = 
     for i in range(len(barIn.notes)-1):
         #? may need altering for chords if the note_ons need to be together?
         for pitch in barIn.notes[i].pitches:
-            print(f"note at {barIn.notes[i].start} with len: {barIn.notes[i+1].start - barIn.notes[i].start}")
+            #print(f"note at {barIn.notes[i].start} with len: {barIn.notes[i+1].start - barIn.notes[i].start}")
             pianoTrack.append(Message('note_on',  note=pitch, velocity=64, time=0))
             pianoTrack.append(Message('note_off', note=pitch, velocity=64, time=int(ppq*(barIn.notes[i+1].start - barIn.notes[i].start))))
 
     #special case for last note
     for pitch in barIn.notes[len(barIn.notes)-1].pitches:
-        print(f"note at {barIn.notes[len(barIn.notes)-1].start} with len: {(tsN+1) - barIn.notes[len(barIn.notes)-1].start}")
+        #print(f"note at {barIn.notes[len(barIn.notes)-1].start} with len: {(tsN+1) - barIn.notes[len(barIn.notes)-1].start}")
         pianoTrack.append(Message('note_on',  note=pitch, velocity=64, time=0))
         pianoTrack.append(Message('note_off', note=pitch, velocity=64, time=int(ppq*((tsN+1) - barIn.notes[len(barIn.notes)-1].start))))
         
