@@ -29,7 +29,7 @@ bars = []
 for i in range(popSize):
     newBar = gac.bar()
     #starting with a full note
-    #! BIG BUG: if randint hits 20 or lower, the bar will be just a rest, thus breaking the embedding 
+    #! if randint hits 20 or lower, the bar will be just a rest, thus breaking the embedding 
     #! and causing a crash: improve midi renderer to properly render rests to re-impliment
     newBar.addNote(gac.note(rand.randint(21, 108), 1))
     bars.append(newBar)
