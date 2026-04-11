@@ -22,8 +22,15 @@ class bar: #single track bar
     def __init__(self):
         self.notes = []
 
-    def addNote(self, note):
-        self.notes.append(note)
+    def addNote(self, note, index = -1):
+        if(index == -1):
+            self.notes.append(note)
+        else:
+            if(index > len(self.notes)):
+                print(f"index {index} out of range for notes, note not added")
+            else:
+                self.notes.insert(index, note)
+
 
     def getNoteBeat(self, noteIndex):
         if(noteIndex < len(self.notes)):

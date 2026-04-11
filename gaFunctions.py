@@ -101,53 +101,58 @@ def getFittest(barsIn):
             fi = i
     return barsIn[fi]
 
+def getCoBeat(tsN):
+    coBeat = rand.randint(1,tsN)
+
+    #TODO: make the odds fairer?
+    while(coBeat == 1):
+        subdiv = 0.5
+        #* limiting to 1/64th notes
+        for j in range(4):
+            r = rand.random()
+            #2/4 chance of terminating and keeping the current split position
+            if(r < 0.5):
+                break
+            #1/4 of going down a level at the increment forward
+            elif(r < 0.75):
+                coBeat += subdiv
+            else:
+                #1/4 of going down a level at an current position
+                subdiv /= 2
+    return coBeat
+
 def crossover(barsIn, tsN, mutationProb, crossoverProb):
     barsOut = []
 
     
     for i in range(len(barsIn)//2):
         #initial, picking the beat
-        coBeat = rand.randint(1,tsN)
         bar1 = barsIn.pop(rand.randint(0, len(barsIn)-1))
         bar2 = barsIn.pop(rand.randint(0, len(barsIn)-1))
 
         if(crossoverProb < rand.random()):
             #crossover did not happen
             if rand.random() <= mutationProb:
-                mutate(bar1)     
+                crBar = mutate(bar1, tsN)     
             barsOut.append(bar1)
             if rand.random() <= mutationProb:
-                mutate(bar2)     
+                crBar = mutate(bar2, tsN)     
             barsOut.append(bar2)
             continue
 
-        coBeat = rand.randint(1,tsN)
         
-        #TODO: make the odds fairer?
-        while(coBeat == 1):
-            subdiv = 0.5
-            #* limiting to 1/64th notes
-            for j in range(4):
-                r = rand.random()
-                #2/4 chance of terminating and keeping the current split position
-                if(r < 0.5):
-                    break
-                #1/4 of going down a level at the increment forward
-                elif(r < 0.75):
-                    coBeat += subdiv
-                #1/4 of going down a level at an current position
-                subdiv /= 2
+        coBeat = getCoBeat(tsN)
 
         #print(f"crossover at {coBeat}")
 
         crBar = cr(bar1, bar2, coBeat)        
         if rand.random() <= mutationProb:
-            mutate(crBar)       
+            crBar = mutate(crBar, tsN)       
         barsOut.append(crBar)
 
         crBar = cr(bar2, bar1, coBeat)     
         if rand.random() <= mutationProb:
-            mutate(crBar)       
+            crBar = mutate(crBar, tsN)       
         barsOut.append(crBar)
     
     return barsOut
@@ -285,17 +290,45 @@ def crOld(bar1, bar2, coBeat):
 
     return outBar
 
-#alter bars and notes in place
-def mutate(barIn):
-    #alters a bar object in place
-    #so what does mutate do?
-    #take a note, change it
-    #pick note, take note after it, merge into first note
-    if(len(barIn.notes) > 1):
-        i = rand.randint(0, len(barIn.notes)-2)
-        pitch = rand.randint(21, 108)
-        barIn.notes.pop(i+1)
-        barIn.notes[i] = gac.note(pitch, barIn.notes[i].start)
+def mutate(barIn, tsN):
+    outBar = gac.bar()
+    outBar.copyBarNotes(barIn)
+
+    pitch = rand.randint(21, 108)
+
+    r = rand.random()
+
+    if(r >= 0.33 or len(outBar.notes) <= 1):
+        #print("calling crOld")
+        outBar = crOld(outBar, outBar, getCoBeat(tsN))
+        #pick a random note, add a new note after it thats before the next note
+        #i = rand.randint(0, len(outBar.notes)-1)
+        #n1 = outBar.notes[i].start
+        #n2 = 0
+        #if(i+1 == len(outBar.notes)):
+        #    n2 = tsN
+        #else:
+        #    n2 = outBar.notes[i+1].start
+#
+        ## checking forwards from n1, pref full beats, for a place to place a new beat
+        #subdiv = 1
+        #for j in range(4):
+        #    n = floor(n1) + subdiv
+        #    if(n > n1 and n < n2):
+        #        outBar.addNote(gac.note(pitch, n), i+1) 
+        #        break
+        #    subdiv /= 2
+    elif(r >= 0.66):
+        #pick note, take note after it, merge into first note
+        i = rand.randint(0, len(outBar.notes)-2)
+        outBar.notes.pop(i+1)
+        outBar.notes[i] = gac.note(pitch, outBar.notes[i].start)
+    else:
+        #just change a notes pitch
+        i = rand.randint(0, len(outBar.notes)-1)
+        outBar.notes[i].pitch = pitch
+
+    return outBar
 
 def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = "outputFOO"):
     #ppq = pulses per quater or ticks per beat, default is 480

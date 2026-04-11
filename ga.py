@@ -15,7 +15,7 @@ popSize = 32
 
 crossoverProb = 0.8
 
-mutationProb = 0.5
+mutationProb = 0.7
 #end of stuff to put in args
 tsNumerator = md[0]
 tsDenominator = md[1]
@@ -48,8 +48,12 @@ for i in range(100):
     print(f"gen {i}")
     parentBars = gaf.getParents(bars, popSize, inputEmb, tsNumerator, tsDenominator, bpm)
     f = gaf.getFittest(parentBars)
+    print(f"fittest member fitness: {f.fitness}")
+
     if(f.fitness >= 0.8):
         gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/geni_fit{f.fitness}")
+    #gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/{i}geni_fit{f.fitness}")
+
 
     bars = gaf.crossover(parentBars, tsNumerator, 0.5, crossoverProb)
 
