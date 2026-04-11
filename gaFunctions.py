@@ -123,6 +123,7 @@ def crossover(barsIn, tsN, mutationProb, crossoverProb):
 
         coBeat = rand.randint(1,tsN)
         
+        #TODO: make the odds fairer?
         while(coBeat == 1):
             subdiv = 0.5
             #* limiting to 1/64th notes
@@ -151,7 +152,81 @@ def crossover(barsIn, tsN, mutationProb, crossoverProb):
     
     return barsOut
 
+
 def cr(bar1, bar2, coBeat):
+    #* beats are indexing from 1 where 1 is the starting beat in the bar
+    outBar = gac.bar()
+    bar1.copyBarNotes(bar1)
+    bar2.copyBarNotes(bar2)
+
+    #goal here compared to last cr logic is to honour the length of the last note before the crossover point
+    #this is to avoid adding more max notes to the children than either of the parents
+    #adding more notes should be a mutation opperation
+
+    adjCoBeat = coBeat
+
+    for i in range(len(bar1.notes)):
+        #if a note is before crossover, keep it, otherwise break
+        if(bar1.notes[i].start < coBeat):
+            outBar.addNote(gac.note(bar1.notes[i].pitches, bar1.notes[i].start))
+
+            if(i+1 == len(bar1.notes)):
+                #no beats from bar2 should be included
+                return outBar
+
+            #print(f"pre 0, bar1.notes[i].start {bar1.notes[i].start} < coBeat {coBeat}")
+        else:
+            #print(f"pre 1, pass as note start {bar1.notes[i].start} > coBeat {coBeat}")
+            adjCoBeat = bar1.notes[i].start
+            break
+
+    passedCo = False
+    for i in range(len(bar2.notes)):
+        #if a note is before crossover, skip
+        #if note comes on or after crossover:
+        #if note is before end of b1 last note:
+        #   look forward, if next note is also before, skip
+        #   if next note is at end of last b1, skip
+        #   if next note is after, bring current note to end of last b1 and cont
+        #if note starts at the end of b1 last note, place note and continue
+
+        #if a note is before crossover, skip, icl extra check if this is last note in bar
+        if(bar2.notes[i].start < (adjCoBeat)):
+            #print(f"0, pass as bar2 note start {bar2.notes[i].start} < coBeat")
+            if(i+1 == len(bar2.notes)):
+                #if this is the last note in the bar and its less than the co, then set it to the crossover point
+                outBar.addNote(gac.note(bar2.notes[i].pitches, adjCoBeat))
+                #print(f"0.1, i+1 {i+1} == len(bar2.notes) {len(bar2.notes)}, thus this is only note in bar and must be placed at coBeat")
+            #else, there is a note past it, eliminating the possibility that this note could be clipped by the coBeat
+        elif(bar2.notes[i].start == adjCoBeat):
+            #if the notes start is on the crossover, add it to list with no changes and ingore previous note
+            outBar.addNote(gac.note(bar2.notes[i].pitches, bar2.notes[i].start))
+            passedCo = True
+            #print(f"1, bar2.notes[i].start {bar2.notes[i].start} = coBeat {coBeat} and added as such")
+        else:
+            #else: note is > coBeat
+            #if this is the first note to pass the adjCoBeat beat and there is a note behind,
+            #move that previous note forward to the adjCoBeat point
+            #print(f"2, note is > coBeat")
+
+            if(passedCo == False and i != 0):
+                passedCo = True
+                outBar.addNote(gac.note(bar2.notes[i-1].pitches, adjCoBeat))
+            elif(not passedCo and i == 0):
+                #this case shouldnt happen,
+                #as coBeat cannot be 1 and the first note will always be on 1, as rests are coded as "notes"
+                passedCo = True
+                outBar.addNote(gac.note(bar2.notes[i].pitches, adjCoBeat))
+            
+
+            #then add the note that is pass the crossover point
+            outBar.addNote(gac.note(bar2.notes[i].pitches, bar2.notes[i].start))
+            
+
+
+    return outBar
+
+def crOld(bar1, bar2, coBeat):
     #* beats are indexing from 1 where 1 is the starting beat in the bar
     outBar = gac.bar()
     bar1.copyBarNotes(bar1)
