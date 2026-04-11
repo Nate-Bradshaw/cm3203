@@ -4,15 +4,19 @@ from math import floor
 import gaClasses as gac
 import gaFunctions as gaf
 
-
+#TODO: put these into args
 inputMidiPath = "midi/Untitled_15.mid"
 
 md = gaf.getMetadata(inputMidiPath)
 
 inputEmb = gaf.getEmbeddingFile(inputMidiPath)
 
-popSize = 16
+popSize = 32
 
+crossoverProb = 0.8
+
+mutationProb = 0.5
+#end of stuff to put in args
 tsNumerator = md[0]
 tsDenominator = md[1]
 bpm = md[2]
@@ -45,10 +49,9 @@ for i in range(100):
     parentBars = gaf.getParents(bars, popSize, inputEmb, tsNumerator, tsDenominator, bpm)
     f = gaf.getFittest(parentBars)
     if(f.fitness >= 0.8):
-        gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/0.8")
-        break
+        gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/geni_fit{f.fitness}")
 
-    bars = gaf.crossover(parentBars, tsNumerator, 0.5)
+    bars = gaf.crossover(parentBars, tsNumerator, 0.5, crossoverProb)
 
     maxBarLen = 0
     maxBarj = 0

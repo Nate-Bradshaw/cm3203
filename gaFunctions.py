@@ -101,15 +101,28 @@ def getFittest(barsIn):
             fi = i
     return barsIn[fi]
 
-def crossover(barsIn, tsN, mutationProb):
+def crossover(barsIn, tsN, mutationProb, crossoverProb):
     barsOut = []
 
+    
     for i in range(len(barsIn)//2):
         #initial, picking the beat
         coBeat = rand.randint(1,tsN)
         bar1 = barsIn.pop(rand.randint(0, len(barsIn)-1))
         bar2 = barsIn.pop(rand.randint(0, len(barsIn)-1))
 
+        if(crossoverProb < rand.random()):
+            #crossover did not happen
+            if rand.random() <= mutationProb:
+                mutate(bar1)     
+            barsOut.append(bar1)
+            if rand.random() <= mutationProb:
+                mutate(bar2)     
+            barsOut.append(bar2)
+            continue
+
+        coBeat = rand.randint(1,tsN)
+        
         while(coBeat == 1):
             subdiv = 0.5
             #* limiting to 1/64th notes
@@ -124,7 +137,7 @@ def crossover(barsIn, tsN, mutationProb):
                 #1/4 of going down a level at an current position
                 subdiv /= 2
 
-        print(f"crossover at {coBeat}")
+        #print(f"crossover at {coBeat}")
 
         crBar = cr(bar1, bar2, coBeat)        
         if rand.random() <= mutationProb:
