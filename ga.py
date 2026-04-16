@@ -5,7 +5,7 @@ import gaClasses as gac
 import gaFunctions as gaf
 
 #TODO: put these into args
-inputMidiPath = "midi/Untitled_15.mid"
+inputMidiPath = "midi/Mary.mid"
 
 md = gaf.getMetadata(inputMidiPath)
 
@@ -51,22 +51,20 @@ for i in range(100):
     print(f"fittest member fitness: {f.fitness}")
 
     if(f.fitness >= 0.8):
-        gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/geni_fit{f.fitness}")
+        #pass
+        gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/geni{i}_fit{f.fitness}")
+        f.printNotes()
     #gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/{i}geni_fit{f.fitness}")
 
 
     bars = gaf.crossover(parentBars, tsNumerator, 0.5, crossoverProb)
 
-    maxBarLen = 0
-    maxBarj = 0
+    cumBarLen = 0
     for j in range(len(bars)):
-        if (maxBarLen < len(bars[j].notes)):
-            maxBarLen = len(bars[j].notes)
-            maxBarj = j
+        cumBarLen += len(bars[j].notes)
+    
 
-    print(f"max bar len of this gen = {maxBarLen}")
-
-    bars[maxBarj].printNotes()
+    print(f"avr bar len of this gen = {cumBarLen / len(bars)}")
     #bars[1].printNotes()
 
 

@@ -103,23 +103,33 @@ def getFittest(barsIn):
 
 def getCoBeat(tsN):
     coBeat = rand.randint(1,tsN)
+    subdiv = rand.randint(1,4)
 
-    #TODO: make the odds fairer?
-    while(coBeat == 1):
-        subdiv = 0.5
-        #* limiting to 1/64th notes
-        for j in range(4):
-            r = rand.random()
-            #2/4 chance of terminating and keeping the current split position
-            if(r < 0.5):
-                break
-            #1/4 of going down a level at the increment forward
-            elif(r < 0.75):
-                coBeat += subdiv
-            else:
-                #1/4 of going down a level at an current position
-                subdiv /= 2
+    for i in range(subdiv):
+        if(0.5 < rand.random()):
+            coBeat += (1 / pow(2, (i+1)))
+
+    #print(coBeat)
+
     return coBeat
+
+
+    ##TODO: make the odds fairer?
+    #while(coBeat == 1):
+    #    subdiv = 0.5
+    #    #* limiting to 1/64th notes
+    #    for j in range(4):
+    #        r = rand.random()
+    #        #2/4 chance of terminating and keeping the current split position
+    #        if(r < 0.5):
+    #            break
+    #        #1/4 of going down a level at the increment forward
+    #        elif(r < 0.75):
+    #            coBeat += subdiv
+    #        else:
+    #            #1/4 of going down a level at an current position
+    #            subdiv /= 2
+    #return coBeat
 
 def crossover(barsIn, tsN, mutationProb, crossoverProb):
     barsOut = []
@@ -298,8 +308,13 @@ def mutate(barIn, tsN):
 
     r = rand.random()
 
-    if(r >= 0.33 or len(outBar.notes) <= 1):
-        #print("calling crOld")
+    if(r <= 0.33):
+        #print("change note")
+        #just change a notes pitch
+        i = rand.randint(0, len(outBar.notes)-1)
+        outBar.notes[i].pitch = pitch
+    elif(r <= 0.66 or len(outBar.notes) <= 1):
+        #print("add note")
         outBar = crOld(outBar, outBar, getCoBeat(tsN))
         #pick a random note, add a new note after it thats before the next note
         #i = rand.randint(0, len(outBar.notes)-1)
@@ -318,15 +333,12 @@ def mutate(barIn, tsN):
         #        outBar.addNote(gac.note(pitch, n), i+1) 
         #        break
         #    subdiv /= 2
-    elif(r >= 0.66):
+    else:
         #pick note, take note after it, merge into first note
+        #print("merge note forward")
         i = rand.randint(0, len(outBar.notes)-2)
         outBar.notes.pop(i+1)
         outBar.notes[i] = gac.note(pitch, outBar.notes[i].start)
-    else:
-        #just change a notes pitch
-        i = rand.randint(0, len(outBar.notes)-1)
-        outBar.notes[i].pitch = pitch
 
     return outBar
 
