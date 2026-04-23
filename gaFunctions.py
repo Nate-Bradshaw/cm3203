@@ -167,7 +167,6 @@ def crossover(barsIn, tsN, mutationProb, crossoverProb, nRange):
     
     return barsOut
 
-
 def cr(bar1, bar2, coBeat):
     #* beats are indexing from 1 where 1 is the starting beat in the bar
     outBar = gac.bar()
