@@ -14,8 +14,10 @@ from os import path
 # popSize(pos int) 
 # CrossoverProb(0-1 float) 
 # MutationProb(0-1 float) 
-# noteRangeEx(pos int)
-# Scale(note then maj/min with sepperating / e.g. d#/maj, only uses sharps, no flats)
+# octaveRange(pos int)
+# notes(list of notes sepperated by (use # to indicate black keys on a keyboard) "/" e.g. c/d/d#/f/g#
+#   these will be the notes that the GA can use
+#   leave empty or as "all" to use all notes
 
 if(len(argv) < 2):
     print("mEror, not enough args, please give a file")
@@ -72,23 +74,55 @@ else:
 
 if(len(argv) >= 6):
     try:
-        rangeIn = int(argv[5])
-        if(rangeIn < 0 or rangeIn > 127):
-            print(f"mEror, note range extention {rangeIn} is out of range 0 to 127")
+        octaveRange = int(argv[5])
+        if(octaveRange < 0 or octaveRange > 10):
+            print(f"mEror, octave range {octaveRange} is out of range 0 to 11")
             exit()
-        nRange = gaf.getNoteRange(inputMidiPath, rangeIn)
     except:
-        print(f"mEror, note range extention {argv[5]} is not an int or not entered correctly")
+        print(f"mEror, octave range {argv[5]} is not an int or not entered correctly")
         exit()
 else:
-    print("No note range extension given! defaulting 127 (all midi note pitches allowed)")
-    nRange = gaf.getNoteRange(inputMidiPath, 127)
+    print("No octave range given! defaulting to 1")
+    octaveRange = 1
 
+# midi 0 is a c (not a named note, but would be c (asumedly))
+# midi 127 is G9
+# middle C is midi 60
+# octaves are 12 notes long
 if(len(argv) >= 7):
-    scale = argv[6].split("/")
-    #algorithm for knowing a root notes midi value and then making a list of all in range (above) based on major or minor scale
+    notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+    allowedNotes = []
+    if(argv == "all"):
+        allowedNotes = [0,1,2,3,4,5,6,7,8,9,10,11]
+    else:
+        noteIn = argv[6].split("/")
+        for n in noteIn:
+            if(len(n) == 1 or len(n) == 2):
+                n = n.upper()
+                if(n in notes):
+                    allowedNotes.append(notes.index(n))
+                else:
+                    print(f"given note {n} is not a note or formatted incorectly, skipping")
+        allowedNotes = list(set(allowedNotes))
+        allowedNotes.sort()
+
+        nRange = gaf.getOctaveRange(inputMidiPath, octaveRange)
+        print(nRange)
+
+        allowedPitches = []
+
+        for p in range(nRange[1]-nRange[0]):
+            p += nRange[0]
+            if((p%12) in allowedNotes):
+                allowedPitches.append(p)
+
+        print(allowedPitches)
+
 else:
-    print("No scale given! defaulting to no scale (all notes allowed)")
+    print("No notes given! defaulting to all notes allowed")
+
+print(allowedNotes)
+exit()
 
 
 inputEmb = gaf.getEmbeddingFile(inputMidiPath)

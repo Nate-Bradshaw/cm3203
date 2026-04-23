@@ -335,8 +335,14 @@ def getNoteRange(midiPath, rangeExtension):
             if msg.note < range[0]: range[0] = msg.note
             if msg.note > range[1]: range[1] = msg.note
     
-    #camping the range values within midi
+    #clamping the range values within midi
     range = [max(range[0]-rangeExtension, 0), min(range[1]+rangeExtension, 127)]
+
+    return range
+
+def getOctaveRange(midiPath, octaveRangeExtension):
+    #this function looks to get the highest and lowest note in a midi track and then get the encompassing octave
+    range = getNoteRange(midiPath, octaveRangeExtension*12)
 
     return range
 
