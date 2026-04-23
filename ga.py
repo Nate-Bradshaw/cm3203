@@ -5,13 +5,15 @@ import gaClasses as gac
 import gaFunctions as gaf
 
 #TODO: put these into args
-inputMidiPath = "midi/Mary.mid"
+inputMidiPath = "midi/oneBar.mid"
+
+nRange = gaf.getNoteRange(inputMidiPath, 0)
 
 md = gaf.getMetadata(inputMidiPath)
 
 inputEmb = gaf.getEmbeddingFile(inputMidiPath)
 
-popSize = 32
+popSize = 64
 
 crossoverProb = 0.8
 
@@ -35,7 +37,7 @@ for i in range(popSize):
     #starting with a full note
     #! if randint hits 20 or lower, the bar will be just a rest, thus breaking the embedding 
     #! and causing a crash: improve midi renderer to properly render rests to re-impliment
-    newBar.addNote(gac.note(rand.randint(21, 108), 1))
+    newBar.addNote(gac.note(gaf.getRandomNote(nRange), 1))
     bars.append(newBar)
 
 # for each whole int in expInd, that bar gets a slot. e.g. 2.5 would be 2 slots with a 0.5 chance of a 3rd
@@ -50,14 +52,16 @@ for i in range(100):
     f = gaf.getFittest(parentBars)
     print(f"fittest member fitness: {f.fitness}")
 
-    if(f.fitness >= 0.8):
+    if(f.fitness >= 0.95):
         #pass
-        gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/geni{i}_fit{f.fitness}")
+        #gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/geni{i}_fit{f.fitness}")
+        gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/nearMatch")
         f.printNotes()
+
     #gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/{i}geni_fit{f.fitness}")
 
 
-    bars = gaf.crossover(parentBars, tsNumerator, 0.5, crossoverProb)
+    bars = gaf.crossover(parentBars, tsNumerator, mutationProb, crossoverProb, nRange)
 
     cumBarLen = 0
     for j in range(len(bars)):

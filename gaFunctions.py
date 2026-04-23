@@ -131,7 +131,7 @@ def getCoBeat(tsN):
     #            subdiv /= 2
     #return coBeat
 
-def crossover(barsIn, tsN, mutationProb, crossoverProb):
+def crossover(barsIn, tsN, mutationProb, crossoverProb, nRange):
     barsOut = []
 
     
@@ -143,10 +143,10 @@ def crossover(barsIn, tsN, mutationProb, crossoverProb):
         if(crossoverProb < rand.random()):
             #crossover did not happen
             if rand.random() <= mutationProb:
-                crBar = mutate(bar1, tsN)     
+                crBar = mutate(bar1, tsN, nRange)     
             barsOut.append(bar1)
             if rand.random() <= mutationProb:
-                crBar = mutate(bar2, tsN)     
+                crBar = mutate(bar2, tsN, nRange)     
             barsOut.append(bar2)
             continue
 
@@ -157,12 +157,12 @@ def crossover(barsIn, tsN, mutationProb, crossoverProb):
 
         crBar = cr(bar1, bar2, coBeat)        
         if rand.random() <= mutationProb:
-            crBar = mutate(crBar, tsN)       
+            crBar = mutate(crBar, tsN, nRange)       
         barsOut.append(crBar)
 
         crBar = cr(bar2, bar1, coBeat)     
         if rand.random() <= mutationProb:
-            crBar = mutate(crBar, tsN)       
+            crBar = mutate(crBar, tsN, nRange)       
         barsOut.append(crBar)
     
     return barsOut
@@ -300,47 +300,51 @@ def crOld(bar1, bar2, coBeat):
 
     return outBar
 
-def mutate(barIn, tsN):
+def mutate(barIn, tsN, nRange):
     outBar = gac.bar()
     outBar.copyBarNotes(barIn)
 
-    pitch = rand.randint(21, 108)
+    pitch = getRandomNote(nRange)
 
     r = rand.random()
 
     if(r <= 0.33):
-        #print("change note")
-        #just change a notes pitch
+        #just change a note's pitch
         i = rand.randint(0, len(outBar.notes)-1)
         outBar.notes[i].pitch = pitch
     elif(r <= 0.66 or len(outBar.notes) <= 1):
-        #print("add note")
+        #using old crossover, this will pick a point, cr with same bar.
+        #this just adds a note at the coPoint
+        #TODO: make this new note a random pitch?
         outBar = crOld(outBar, outBar, getCoBeat(tsN))
-        #pick a random note, add a new note after it thats before the next note
-        #i = rand.randint(0, len(outBar.notes)-1)
-        #n1 = outBar.notes[i].start
-        #n2 = 0
-        #if(i+1 == len(outBar.notes)):
-        #    n2 = tsN
-        #else:
-        #    n2 = outBar.notes[i+1].start
-#
-        ## checking forwards from n1, pref full beats, for a place to place a new beat
-        #subdiv = 1
-        #for j in range(4):
-        #    n = floor(n1) + subdiv
-        #    if(n > n1 and n < n2):
-        #        outBar.addNote(gac.note(pitch, n), i+1) 
-        #        break
-        #    subdiv /= 2
     else:
         #pick note, take note after it, merge into first note
-        #print("merge note forward")
         i = rand.randint(0, len(outBar.notes)-2)
         outBar.notes.pop(i+1)
         outBar.notes[i] = gac.note(pitch, outBar.notes[i].start)
 
     return outBar
+
+def getNoteRange(midiPath, rangeExtension):
+    mid = MidiFile(midiPath)
+    #! working with single track midi
+
+    range = [127, 0]
+
+    for msg in mid:
+        if msg.type == "note_on":
+            if msg.note < range[0]: range[0] = msg.note
+            if msg.note > range[1]: range[1] = msg.note
+    
+    #camping the range values within midi
+    range = [max(range[0]-rangeExtension, 0), min(range[1]+rangeExtension, 127)]
+
+    return range
+
+def getRandomNote(nRange):
+    #returns int value of midi note
+    #TODO: weighted towards more used notes?
+    return rand.randint(nRange[0], nRange[1])
 
 def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = "outputFOO"):
     #ppq = pulses per quater or ticks per beat, default is 480
