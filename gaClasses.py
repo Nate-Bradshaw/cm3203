@@ -4,21 +4,16 @@ class note:
         # PITCHES IS A LIST OF NOTES TO ALLOW CHORDS
         self.pitches = []
         if(type(pitchIn) == list):
-            #* assuming that pitches under 20 are already -1
-            #TODO: move this logic over to the renderer
             self.pitches = pitchIn
         else:
-            if pitchIn <= 20:
-                pitchIn = -1
-            self.pitches.append(pitchIn) #* a pitch of 20 or lower is converted into a rest (-1), means the odd of a rest can be increased
-        #duration in (usually, some time sigs it may be an 1/8th or 1/2th) quarter notes
+            self.pitches.append(pitchIn) #* -1 would be a rest
         self.start = startIn
 
 class bar: #single track bar
     notes = [] # notes should be kept in order
-    fitness = 0 #simularity score, 0 is no relation, 1 is identical, looking for a 0.9ish?
+    fitness = 0 #simularity score, 0 is no relation, 1 is identical
     ei = 0 #expected individuals in next pop
-    srs = -1
+    srs = -1 # doesnt seem to do anything, too late in the project remove it and break something
     def __init__(self):
         self.notes = []
 
@@ -30,17 +25,6 @@ class bar: #single track bar
                 print(f"index {index} out of range for notes, note not added")
             else:
                 self.notes.insert(index, note)
-
-
-    def getNoteBeat(self, noteIndex):
-        if(noteIndex < len(self.notes)):
-            cumBeat = 1
-            for i in range(noteIndex):
-                cumBeat += self.notes[i].duration
-            return cumBeat
-        else:
-            print(f"getNoteBeat {noteIndex} is out of range for length {len(self.notes)}")
-            return -1
     
     def printNotes(self):
         outstr = ""

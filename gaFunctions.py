@@ -5,6 +5,7 @@ from mido import MidiFile, MidiTrack, Message, MetaMessage
 from io import BytesIO
 import random as rand
 import gaClasses as gac
+from sys import exit
 
 midismVerbose = False
 
@@ -105,11 +106,8 @@ def getCoBeat(tsN):
     coBeat = rand.randint(1,tsN)
     subdiv = rand.randint(1,4)
 
-    for i in range(subdiv):
-        if(0.5 < rand.random()):
-            coBeat += (1 / pow(2, (i+1)))
-
-    #print(coBeat)
+    n = rand.randint(1, pow(2, (subdiv+1)))-1
+    coBeat += (n / pow(2, (subdiv+1)))
 
     return coBeat
 
@@ -131,7 +129,7 @@ def getCoBeat(tsN):
     #            subdiv /= 2
     #return coBeat
 
-def crossover(barsIn, tsN, mutationProb, crossoverProb, nRange):
+def crossover(barsIn, tsN, mutationProb, crossoverProb, allowedPitches):
     barsOut = []
 
     
@@ -143,10 +141,10 @@ def crossover(barsIn, tsN, mutationProb, crossoverProb, nRange):
         if(crossoverProb < rand.random()):
             #crossover did not happen
             if rand.random() <= mutationProb:
-                crBar = mutate(bar1, tsN, nRange)     
+                crBar = mutate(bar1, tsN, allowedPitches)     
             barsOut.append(bar1)
             if rand.random() <= mutationProb:
-                crBar = mutate(bar2, tsN, nRange)     
+                crBar = mutate(bar2, tsN, allowedPitches)     
             barsOut.append(bar2)
             continue
 
@@ -157,12 +155,12 @@ def crossover(barsIn, tsN, mutationProb, crossoverProb, nRange):
 
         crBar = cr(bar1, bar2, coBeat)        
         if rand.random() <= mutationProb:
-            crBar = mutate(crBar, tsN, nRange)       
+            crBar = mutate(crBar, tsN, allowedPitches)       
         barsOut.append(crBar)
 
         crBar = cr(bar2, bar1, coBeat)     
         if rand.random() <= mutationProb:
-            crBar = mutate(crBar, tsN, nRange)       
+            crBar = mutate(crBar, tsN, allowedPitches)       
         barsOut.append(crBar)
     
     return barsOut
@@ -184,9 +182,9 @@ def cr(bar1, bar2, coBeat):
         if(bar1.notes[i].start < coBeat):
             outBar.addNote(gac.note(bar1.notes[i].pitches, bar1.notes[i].start))
 
-            if(i+1 == len(bar1.notes)):
-                #no beats from bar2 should be included
-                return outBar
+            #if(i+1 == len(bar1.notes)):
+            #    #no beats from bar2 should be included
+            #    return outBar
 
             #print(f"pre 0, bar1.notes[i].start {bar1.notes[i].start} < coBeat {coBeat}")
         else:
@@ -226,7 +224,7 @@ def cr(bar1, bar2, coBeat):
             if(passedCo == False and i != 0):
                 passedCo = True
                 outBar.addNote(gac.note(bar2.notes[i-1].pitches, adjCoBeat))
-            elif(not passedCo and i == 0):
+            elif(passedCo == False and i == 0):
                 #this case shouldnt happen,
                 #as coBeat cannot be 1 and the first note will always be on 1, as rests are coded as "notes"
                 passedCo = True
@@ -285,7 +283,7 @@ def crOld(bar1, bar2, coBeat):
                 passedCo = True
                 outBar.addNote(gac.note(bar2.notes[i-1].pitches, coBeat))
                 #print(f"2.1, first note to pass cobeat WITH prev note, adding previous note at coBeat")
-            elif(not passedCo and i == 0):
+            elif(passedCo == False and i == 0):
                 #this case shouldnt happen, as coBeat cannot be 1 and the first note will always be on 1, as rests are coded as "notes"
                 #print(f"this case should not be happening")
                 passedCo = True
@@ -299,11 +297,11 @@ def crOld(bar1, bar2, coBeat):
 
     return outBar
 
-def mutate(barIn, tsN, nRange):
+def mutate(barIn, tsN, allowedPitches):
     outBar = gac.bar()
     outBar.copyBarNotes(barIn)
 
-    pitch = getRandomNote(nRange)
+    pitch = getRandomNote(allowedPitches)
 
     r = rand.random()
 
@@ -320,7 +318,7 @@ def mutate(barIn, tsN, nRange):
         #pick note, take note after it, merge into first note
         i = rand.randint(0, len(outBar.notes)-2)
         outBar.notes.pop(i+1)
-        outBar.notes[i] = gac.note(pitch, outBar.notes[i].start)
+        #outBar.notes[i] = gac.note(pitch, outBar.notes[i].start)
 
     return outBar
 
@@ -340,19 +338,38 @@ def getNoteRange(midiPath, rangeExtension):
 
     return range
 
-def getOctaveRange(midiPath, octaveRangeExtension):
+def getOctaveRange(midiPath, octaveExtension):
     #this function looks to get the highest and lowest note in a midi track and then get the encompassing octave
-    range = getNoteRange(midiPath, octaveRangeExtension*12)
+    range = getNoteRange(midiPath, 0)
+    mid = (range[0] + range[1]) // 2
+    print(f"midpoint: {mid}")
 
-    return range
+    newRange = [mid, mid]
+    while(newRange[0] > range[0]-(12*octaveExtension) and newRange[1] < range[1]+(12*octaveExtension)):
+        newRange[0] -= 12
+        newRange[1] += 12
 
-def getRandomNote(nRange):
+    #clamping the range values within midi
+    newRange = [max(newRange[0], 0), min(newRange[1], 127)]
+
+    return newRange
+
+def getRandomNote(allowedPitches):
     #returns int value of midi note
     #TODO: weighted towards more used notes?
-    return rand.randint(nRange[0], nRange[1])
+    return allowedPitches[rand.randint(0, len(allowedPitches)-1)]
+
+def getRandomStartGen(popSize, allowedPitches):
+    bars = []
+    for i in range(popSize):
+        newBar = gac.bar()
+        #starting with a full note
+        newBar.addNote(gac.note(getRandomNote(allowedPitches), 1))
+        bars.append(newBar)
+    return bars
 
 def renderMidi(barIn, tsN, tsD, bpm = 120, ppq = 480, createFile = True, name = "outputFOO"):
-    #ppq = pulses per quater or ticks per beat, default is 480
+    # ppq = pulses per quater or ticks per beat, default is 480
     # therefore 480 ticks is a quater note, 480/2 is 1/8th note ect
     #just rendering as piano for now
 
@@ -401,6 +418,7 @@ def getMetadata(midiPath):
                 tsD = msg.denominator
             elif msg.type == 'set_tempo':
                 bpm = 60_000_000 // msg.tempo
-    #TODO: some sort of check so we dont have -1 on any output
-    #! also songs that change tempo or time sig?
+    if(tsN == -1 or tsD == -1 or bpm == -1):
+        print("corrupt midi file inputted")
+        exit()
     return [tsN, tsD, bpm]
