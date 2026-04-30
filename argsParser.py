@@ -109,7 +109,7 @@ def parseArgs(argv):
         print("No notes given! defaulting to all notes allowed")
         allowedNotes = [0,1,2,3,4,5,6,7,8,9,10,11]
     else:
-        noteIn = argv[8].split("/")
+        noteIn = argv[8].split(",")
         for n in noteIn:
             if(len(n) == 1 or len(n) == 2):
                 n = n.upper()

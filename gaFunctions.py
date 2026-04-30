@@ -94,13 +94,39 @@ def getParents(barsIn, popSizeIn, inputEmb, tsN, tsD, bpm):
 
     return nextBars
 
-def getFittest(barsIn):
+def getGenFittest(barsIn):
     #assumes the bars have already been compared to embedings
     fi = 0
     for i in range(len(barsIn)):
         if(barsIn[i].fitness > barsIn[fi].fitness):
             fi = i
     return barsIn[fi]
+
+def sortFunction(bar):
+    return bar.fitness
+
+def isUnique(bar, collection):
+    return all(bar.notes != b.notes for b in collection)
+
+def getFittest(barsIn, outBarsIn, numOut):
+    outBar = outBarsIn
+    outBar.sort(key = sortFunction)
+
+    for bar in (barsIn + outBarsIn):
+        if not isUnique(bar, outBar):
+            continue
+
+        if bar.fitness > outBar[-1].fitness:
+            outBar.append(bar)
+            outBar.pop(0)
+        elif bar.fitness > outBar[0].fitness:
+            for i in range(numOut - 1):
+                if outBar[i].fitness < bar.fitness <= outBar[i+1].fitness:
+                    outBar.insert(i + 1, bar)
+                    outBar.pop(0)
+                    break 
+
+    return outBar
 
 def getCoBeat(tsN):
     coBeat = rand.randint(1,tsN)

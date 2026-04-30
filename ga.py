@@ -16,14 +16,14 @@ import argsParser
 # CrossoverProb(0-1 float) 
 # MutationProb(0-1 float) 
 # octaveRange(pos int)
-# notes(list of notes sepperated by (use # to indicate black keys on a keyboard) "/" e.g. c/d/d#/f/g#
+# notes(list of notes sepperated by (use # to indicate black keys on a keyboard) "," e.g. c,d,d#,f,g#
 #   these will be the notes that the GA can use
 #   leave empty or as "all" to use all notes
 """
-& G:/Uni_Gitlab/Year3/cm3203/mVenv/Scripts/python.exe g:/Uni_Gitlab/Year3/cm3203/ga.py midi/user_test/Chopin_Nocturnes_Op9_No.2_EbMajor_alt.mid 32 100 10 0.75 0.5 0 d#/f/g/g#/a#/c/d
-& G:/Uni_Gitlab/Year3/cm3203/mVenv/Scripts/python.exe g:/Uni_Gitlab/Year3/cm3203/ga.py midi/user_test/Free_Bird_Lynyrd_Skynyrd_solo_full.mid 32 100 10 0.75 0.5 0 c/d/f/g/a#
-& G:/Uni_Gitlab/Year3/cm3203/mVenv/Scripts/python.exe g:/Uni_Gitlab/Year3/cm3203/ga.py midi/user_test/Free_Bird_Lynyrd_Skynyrd_solo_short.mid 32 100 10 0.75 0.5 0 c/d/f/g/a#
-& G:/Uni_Gitlab/Year3/cm3203/mVenv/Scripts/python.exe g:/Uni_Gitlab/Year3/cm3203/ga.py midi/user_test/maryHadLamb.mid 32 100 10 0.75 0.5 0 c/d/e/g
+& G:/Uni_Gitlab/Year3/cm3203/mVenv/Scripts/python.exe g:/Uni_Gitlab/Year3/cm3203/ga.py midi/user_test/Chopin_Nocturnes_Op9_No.2_EbMajor_alt.mid 32 100 10 0.75 0.5 0 d#,f,g,g#,a#,c,d
+& G:/Uni_Gitlab/Year3/cm3203/mVenv/Scripts/python.exe g:/Uni_Gitlab/Year3/cm3203/ga.py midi/user_test/Free_Bird_Lynyrd_Skynyrd_solo_full.mid 32 100 10 0.75 0.5 0 c,d,f,g,a#
+& G:/Uni_Gitlab/Year3/cm3203/mVenv/Scripts/python.exe g:/Uni_Gitlab/Year3/cm3203/ga.py midi/user_test/Free_Bird_Lynyrd_Skynyrd_solo_short.mid 32 100 10 0.75 0.5 0 c,d,f,g,a#
+& G:/Uni_Gitlab/Year3/cm3203/mVenv/Scripts/python.exe g:/Uni_Gitlab/Year3/cm3203/ga.py midi/user_test/maryHadLamb.mid 32 100 10 0.75 0.5 0 c,d,e,g
 """
 (inputMidiPath, popSize, numGens, numOut, crossoverProb, mutationProb, allowedPitches) = argsParser.parseArgs(argv)
 
@@ -46,26 +46,19 @@ bars = gaf.getRandomStartGen(popSize, allowedPitches)
 # any with 0 slots are eliminated, any with 1 stay and any with more get multiple slots
 i = 0
 
-outputLevel = 0.6
+outputBars = []
 
+for i in range(numOut):
+    outputBars.append(gac.bar())
 
 for i in range(numGens):
+    parentBars = gaf.getParents(bars, popSize, inputEmb, tsNumerator, tsDenominator, bpm)
+    f = gaf.getGenFittest(parentBars)
     print("")
     print(f"gen {i+1}")
-    parentBars = gaf.getParents(bars, popSize, inputEmb, tsNumerator, tsDenominator, bpm)
-    f = gaf.getFittest(parentBars)
-    print(f"fittest member fitness: {f.fitness}")
+    print(f"fittest chromosome fitness: {f.fitness}")
 
-    if(f.fitness >= outputLevel):
-        outputLevel = round(outputLevel, 2)
-        gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"user_test/gen_outputs/{outputLevel}")
-        outputLevel += 0.05
-        f.printNotes()
-        if(outputLevel >= 0.95):
-            exit()
-
-    #gaf.renderMidi(f, tsNumerator, tsDenominator, name=f"genTest/{i}geni_fit{f.fitness}")
-
+    outputBars = gaf.getFittest(bars, outputBars, numOut)
 
     bars = gaf.crossover(parentBars, tsNumerator, mutationProb, crossoverProb, allowedPitches)
 
@@ -74,10 +67,7 @@ for i in range(numGens):
         cumBarLen += len(bars[j].notes)
     
 
-    print(f"avr bar len of this gen = {cumBarLen / len(bars)}")
-    #bars[1].printNotes()
+    print(f"average bar length of this gen = {cumBarLen / len(bars)}")
 
-
-    #gaf.renderMidi(bars[maxBarj], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}_{maxBarj}")
-    #gaf.renderMidi(bars[1], tsNumerator, tsDenominator, name=f"genTest/Gen{i+1}_{1}")
-
+for bar in outputBars:
+    gaf.renderMidi(bar, tsNumerator, tsDenominator, name=f"user_test/gen_outputs/{round(bar.fitness, 4)}")
