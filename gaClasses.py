@@ -1,7 +1,9 @@
+# contains the bar and note class for use as chromosomes
+
 class note:
     def __init__(self, pitchIn, startIn):
-        #on pitch, may impliment rests as a value such as -1 or smthn
-        # PITCHES IS A LIST OF NOTES TO ALLOW CHORDS
+        # value of -1 reserved for rests for implimentation in future
+        # pitches as list to allow chords in future
         self.pitches = []
         if(type(pitchIn) == list):
             self.pitches = pitchIn

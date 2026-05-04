@@ -7,6 +7,8 @@ import random as rand
 import gaClasses as gac
 from sys import exit
 
+# contains functions for preforming genetic opperations, rendering and reading MIDI and other operations
+
 midismVerbose = False
 
 #pre downloaded embedding and model
@@ -55,9 +57,6 @@ def getParents(barsIn, popSizeIn, inputEmb, tsN, tsD, bpm):
         barsIn[i].fitness = similarityScore
         sumFitness += similarityScore
 
-    print(f"sum fitness: {sumFitness}")
-    print(f"avr fitness: {sumFitness/popSizeIn}")
-
     for i in range(popSizeIn):
         #amount to be included guarenteed in next generation
         #https://datajobstest.com/data-science-repo/Genetic-Algorithm-Guide-[Tom-Mathew].pdf 2.7
@@ -88,11 +87,8 @@ def getParents(barsIn, popSizeIn, inputEmb, tsN, tsD, bpm):
                 break
         nextBars.append(selected)
 
-    print(f"new gen size: {len(nextBars)}")
     #fittest chromosomes will stay at the start of the new list, as they had a ei of 1 or higher
-    #! although if ei is 2 or higher, there will duplicate genes, cossover of these genes would do nothing so there should be some randomness
-
-    return nextBars
+    return (sumFitness, nextBars)
 
 def getGenFittest(barsIn):
     #assumes the bars have already been compared to embedings
@@ -113,15 +109,15 @@ def getFittest(barsIn, outBarsIn, numOut):
     outBar.sort(key = sortFunction)
 
     for bar in (barsIn + outBarsIn):
-        if not isUnique(bar, outBar):
+        if(not isUnique(bar, outBar)):
             continue
 
-        if bar.fitness > outBar[-1].fitness:
+        if(bar.fitness > outBar[-1].fitness):
             outBar.append(bar)
             outBar.pop(0)
-        elif bar.fitness > outBar[0].fitness:
+        elif(bar.fitness > outBar[0].fitness):
             for i in range(numOut - 1):
-                if outBar[i].fitness < bar.fitness <= outBar[i+1].fitness:
+                if(outBar[i].fitness < bar.fitness <= outBar[i+1].fitness):
                     outBar.insert(i + 1, bar)
                     outBar.pop(0)
                     break 
@@ -368,7 +364,7 @@ def getOctaveRange(midiPath, octaveExtension):
     #this function looks to get the highest and lowest note in a midi track and then get the encompassing octave
     range = getNoteRange(midiPath, 0)
     mid = (range[0] + range[1]) // 2
-    print(f"midpoint: {mid}")
+    #print(f"midpoint: {mid}")
 
     newRange = [mid, mid]
     while(newRange[0] > range[0]-(12*octaveExtension) and newRange[1] < range[1]+(12*octaveExtension)):

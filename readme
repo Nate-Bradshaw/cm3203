@@ -1,0 +1,54 @@
+to run ga.py:
+
+using python version: 3.12.10
+
+after extracting the files:
+open root folder
+create venv (e.g. "py -3.12.10 venv venv")
+pip install -r requirements.txt
+
+getting correct CUDA
+pip uninstall torch
+
+nvidia-smi
+find cuda version, e.g:
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 581.29                 Driver Version: 581.29         CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+...
+
+go to
+https://pytorch.org/get-started/locally/
+and select stable and matching OS, package, ptyhon and CUDA
+run command given
+
+using torchTest.py, results should be along the lines of:
+True
+1
+13.0
+
+before running, make sure midi/results exists
+
+ga.py should be runnable now
+
+ga.py args usage:
+ ga.py filePath.mid popSize numGens numOut crossoverProb mutationProb octaveRange notes
+ filePath.mid 
+ popSize, population size (int: positive, even. max 1024) default: 32
+ numGens, number of generations (int: positive) default: 100
+ numOut, top n individuals to be outputted (int: nonzero, positive) default: 10
+ CrossoverProb, probability of a crossover occuring for a pair of chromosomes (float: 0-1) default: 0.7
+ MutationProb, probability of a mutation occuring for a chromosome (float: 0-1) default: 0.5
+ octaveRange, range of notes included each side of the input MIDI's note range (int: 1 to 11) default: 1
+   11 would allow for all MIDI pitches
+ notes(list of notes sepperated by (use # to indicate black keys on a keyboard) "," e.g. c,d,d#,f,g#
+   these will be the notes that the GA can use within the octave range, e.g. if only "c" is selected, only c notes will be included
+   leave empty or as "all" to use all notes
+
+below are the arguments used with the usability survey
+ga.py midi/Chopin_Nocturnes_Op9_No.2_EbMajor_alt.mid 32 100 10 0.75 0.5 0 d#,f,g,g#,a#,c,d
+ga.py midi/Chopin_Nocturnes_Op9_No.2_EbMajor_alt.mid 32 100 10 0.75 0.5 0
+ga.py midi/Free_Bird_Lynyrd_Skynyrd_solo_short.mid 32 100 10 0.75 0.5 0 c,d,f,g,a#
+ga.py midi/Free_Bird_Lynyrd_Skynyrd_solo_short.mid 32 100 10 0.75 0.5 0
+ga.py midi/maryHadLamb.mid 32 100 10 0.75 0.5 0 c,d,e,g
+ga.py midi/maryHadLamb.mid 32 100 10 0.75 0.5 0

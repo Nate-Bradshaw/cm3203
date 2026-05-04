@@ -2,6 +2,9 @@ from sys import exit
 from os import path
 import gaFunctions as gaf
 
+# Contains parsing and defaults for command line arguments
+
+# takes in list of args, returns tuple of values.
 def parseArgs(argv):
     if(len(argv) < 2):
         print("mEror, not enough args, please give a file")
@@ -36,7 +39,7 @@ def parseArgs(argv):
                 print(f"mEror, number of generations {numGens} given is not positive")
                 exit()
         except:
-            print(f"mEror, popsize {argv[3]} is not an int or not entered correctly")
+            print(f"mEror, number of generations {argv[3]} is not an int or not entered correctly")
             exit()
     else:
         print("No number of generation given! defaulting to 100")
@@ -50,7 +53,7 @@ def parseArgs(argv):
                 print(f"mEror, number of outputs {numOut} given is not positive")
                 exit()
         except:
-            print(f"mEror, popsize {argv[4]} is not an int or not entered correctly")
+            print(f"mEror, number of outputs {argv[4]} is not an int or not entered correctly")
             exit()
     else:
         print("No number of outputs given! defaulting to 10")
@@ -88,8 +91,8 @@ def parseArgs(argv):
         try:
             octaveRange = int(argv[7])
             print(f"Octave range: {octaveRange}")
-            if(octaveRange < 0 or octaveRange > 10):
-                print(f"mEror, octave range {octaveRange} is out of range 0 to 11")
+            if(octaveRange < 1 or octaveRange > 10):
+                print(f"mEror, octave range {octaveRange} is out of range 1 to 11")
                 exit()
         except:
             print(f"mEror, octave range {argv[7]} is not an int or not entered correctly")
